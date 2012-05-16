@@ -1,10 +1,8 @@
 package com.ign.utils;
 
-import com.ign.utils.RexStatus;
-
 public class JSON
 {
-	public static String Build(RexStatus status, String results)
+	public static String Build(Status status, String results)
 	{
 		String n = "\n"; String six = "      ";
 	    String ret =
@@ -43,7 +41,7 @@ public class JSON
 "	}" +n+
 "}" +n+
 "";
-		RexStatus status = new RexStatus(RexStatus.StatusType.Success.toString(),0,"Success");
+		Status status = new Status(Status.StatusType.Success.toString(),0,"Success");
 		System.out.println(JSON.Build(status, ret));
 	}
 }

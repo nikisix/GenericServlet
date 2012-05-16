@@ -23,17 +23,14 @@ import javax.servlet.http.HttpServletResponse;
 public class Servlet1 extends HttpServlet {
 	HashMap model = new HashMap(); //model may be of any type
 
-    private enum RecCalls {call1, call2, call3};
-	private enum AllCalls {call1, call2, call3, ping, healthcheck, metrics, help};
+    private enum RecCalls {call1, call2, call3}
+	private enum AllCalls {call1, call2, call3, ping, healthcheck, metrics, help}
 	AllCalls allCalls;
 	RecCalls recCalls;
 	String howMany;
 	long DurationMillis;
 	final static String n = "\n";
-	final static String HELP ="" +n+
- "/**"+n+ 
- "* HELP MSG - explain the calls and the parameters each takes" +n+
- "*/"+n;
+	final static String HELP ="HELP MSG - explain the calls and the parameters each takes";
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -42,9 +39,9 @@ public class Servlet1 extends HttpServlet {
 	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		if(!request.getParameterNames().hasMoreElements()) return; 		//weed out requests with zero parameters
-		
-		RexStatus status = new RexStatus(RexStatus.StatusType.RecommendationEngineFailure.toString(),2,""); 
-		String ret = "";
+        Gson gson = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
+
+        Status status = new Status();
 		try	{
 			DurationMillis = -1;
 			GregorianCalendar begin = new GregorianCalendar();
@@ -54,19 +51,20 @@ public class Servlet1 extends HttpServlet {
 					paramName = getParamValueIgnoreCase(request,"do");
 				}
 				catch(ServletException se){
-					throw new ServletException("\nThe operation parameter must not be empty.\n " +
-							"Possible values include: call1, call2, call3.\n"+HELP+n);
+					throw new ServletException("\nThe do parameter must not be empty.\n " +
+							"Possible values include: do= call1, call2, call3.\n"+HELP+n);
 				}
 				
-				if (model != null && allEnumContains(paramName)){
+				if (allEnumContains(paramName)){
 
 					if(paramName.equalsIgnoreCase("call1")){
 						try {
                             String param1 = getParamValueIgnoreCase(request, "param1");
                             String param2 = getParamValueIgnoreCase(request, "param2");
+                            status.setType(Status.StatusType.Success);
 						} catch (ServletException se){ 
-							throw new ServletException("\nInvalid parameters to the 'call1' api call.\n " +
-									"Required parameters are (String) param1 and (int) param2\n"+n+HELP);
+							status.setMsg("\nInvalid parameters to the call1." +
+							"\n Required parameters are param1, param3\n"+n+HELP);
 						}
 					}
 					
@@ -75,46 +73,34 @@ public class Servlet1 extends HttpServlet {
 							String param1 = getParamValueIgnoreCase(request,"param1");
 							String param2 = getParamValueIgnoreCase(request,"param2");
 							String param3 = getParamValueIgnoreCase(request,"param3");
+                            status.setType(Status.StatusType.Success);
 						} catch (ServletException se){
-							throw new ServletException("\nInvalid parameters to the 'recommendedBecause' api call." +
-							"\n Required parameters are (int) howMany, (long) gameID, and (String) tempUserTriplets\n"+n+HELP);
+							status.setMsg("\nInvalid parameters to the call2." +
+							"\n Required parameters are param2, param3\n"+n+HELP);
 						}
 					}
 					
 					else if(paramName.equalsIgnoreCase("help") ||
 							paramName.equalsIgnoreCase("")){
-						throw new ServletException(HELP);
+						status.setMsg(HELP);
+                        status.setType(Status.StatusType.NoResults);
 					}
 
                     else if(paramName.equalsIgnoreCase("healthcheck")){
                        //todo do healthcheck
+                        status.setType(Status.StatusType.NoResults);
                     }
 
                     else if(paramName.equalsIgnoreCase("ping")){
                        //todo do healthcheck
+                        status.setType(Status.StatusType.NoResults);
                     }
-					if(ret!=null){
-						response.getOutputStream().println(ret);
-					}
-					
-					if(ret==""){
-						status.setType(RexStatus.StatusType.NoResults);
-						status.setCode(4);
-						status.setMsg("noResults");
-//						response.getOutputStream().println(JSON.Build(status, HELP));
-//                        ret = new JSONObject(HELP).toString();
-						Gson gson = new GsonBuilder()
-						.disableHtmlEscaping()
-						.setPrettyPrinting()
-						.create();
-						ret = gson.toJson(new ServletException(HELP));
-					}
 					
 				}//not one of the recognized api calls
 				else {
 					String s = "\nThe operation parameter: "+paramName+ " wasn't recognized.\n" +n+ HELP;
-					throw new ServletException(s);
-//					response.getOutputStream().println(gson.toJson(e));
+					status.setMsg(s);
+                    status.setType(Status.StatusType.InvalidParameter);
 				}				
 			}
 			GregorianCalendar end = new GregorianCalendar();
@@ -126,12 +112,11 @@ public class Servlet1 extends HttpServlet {
 				stackTrace = stackTrace.concat(ste.toString()+"\n");
 				if(count++>maxDepth){	break; }
 			}
-			status.setData(stackTrace);
-//			status.setMsg(e.toString());
-			status.setDetails(e.toString());
-			response.getOutputStream().println(JSON.Build(status, ret));
+			status.setType(Status.StatusType.Failure);
+            status.setDetails(e.toString());
 		}
-	}
+        response.getOutputStream().println(gson.toJson(status));
+    }
 	
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)

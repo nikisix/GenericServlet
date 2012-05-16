@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Class-Path: /User/ntomasino/code/GenericServlet/build:/Users/ntomasino
+ /jars/socialServlet/lib:/Users/ntomasino/jars/atajars/servlet.jar
+Main-Class: com.ign.servlet.Servlet1
+

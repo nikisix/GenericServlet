@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Class-Path: rex-model.jar guava-r09-gwt.jar servlet.jar slf4j-api-1.6.
+ 1.jar guava-r09.jar gson-1.7.1.jar json.jar slf4j-simple-1.6.1.jar
+Main-Class: com.ign.servlet.Servlet1
+

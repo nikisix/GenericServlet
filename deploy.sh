@@ -4,5 +4,5 @@ rm -r WebContent/WEB-INF/classes/
 cp -r build/classes WebContent/WEB-INF/
 cd WebContent
 jar -cvf GenericServlet.war .
-cp GenericServlet.war /usr/local/Cellar/tomcat/7.0.21/libexec/webapps/
+cp GenericServlet.war $webapps
 #catalina run 
